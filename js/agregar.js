@@ -10,40 +10,182 @@ st.agregar = (function () {
                 }).join('');
             });
         },
-        agregarTurno: function(){
-            $("#formAgregarTurno").submit(function (e) {
+        agregarUsuario: function(){
+            $("#formAgregarUsuarioTsi").submit(function (e) {
                 e.preventDefault(); 
-                var formData = $("#formAgregarTurno").serialize();
-              
+                var formData = $("#formAgregarUsuarioTsi").serialize();
+                $("#btn_save").hide();
+                $("#btn_load").show();
                 $.ajax({
                     type: "POST",
-                    url: base_url + "index.php/Agregar/guardaTurno",
+                    url: base_url + "index.php/Agregar/guardaUsuarioSti",
                     data:formData,
                     dataType: "json",
                     success: function (response) {
                         console.log(response);
-                        if(response.respuesta.error){
-                            Swal.fire("error", "Solicite apoyo al area de sistemas");
-                        }
-                        Swal.fire("success", "Se guardo con exito");
-                        $("#formAgregarTurno")[0].reset();
-                        $('#asunto, #nombre_turno, #cpp, #indicacion, #firma_turno').val(null).trigger('change');
-                        var pdfUrl = base_url + "index.php/Inicio/pdfTurno?id_turno=" + response.respuesta.id_turno;
-                        var opcionesVentana = 'toolbar=no, location=no, directories=no, status=no, menubar=no, scrollbars=yes, resizable=yes, width=800, height=800';
-                        window.open(pdfUrl, '_blank', opcionesVentana);
-                        window.location.href = base_url + "index.php/Inicio";
+                        if(response.error){
+                            Swal.fire("error", response.respuesta ,"error");
+                        }else{
+                        Swal.fire("success", "Se guardo con exito", 'success');
+                        $("#formAgregarUsuarioTsi")[0].reset();
+                        $("#btn_save").show();
+                        $("#btn_load").hide();
+                        window.location.href = base_url + "index.php/Inicio/usuarios";
+                    }
+                       
                     },
                     error: function (response,jqXHR, textStatus, errorThrown) {
                          var res= JSON.parse (response.responseText);
                         //  console.log(res.message);
-                         Swal.fire("Error", '<p> '+ res.message + '</p>');  
+                         Swal.fire("Error", '<p> '+ res.message + '</p>', 'error');  
+                         $("#btn_save").show();
+                         $("#btn_load").hide();
                     }
                 });
             });
         },
-       
+        
+        validarCURP: function()
+        {
+            console.log('entro a validar curp');
+            const btnBuscar = document.getElementById('icono');
+            const inputCurp = document.getElementById('curp');
+
+            const curp = inputCurp.value.trim().toUpperCase();
+            inputCurp.value = curp; // Convertir a mayúsculas
+        
+            if (curp.length >= 18) {
+                // Estado de "check" si la CURP tiene longitud suficiente
+                st.agregar.toggleButtonState('check');
+        
+                inputCurp.style.color = "black";
+                st.agregar.consultarCURP();
+            } else if (curp.length === 0) {
+                // Reiniciar estado del botón si el campo está vacío
+                st.agregar.toggleButtonState('search');
+            } else {
+                // Estado de "cargando" mientras se escribe
+                btnBuscar.classList.remove('dripicons-loading');
+                st.agregar.toggleButtonState('loading');
+                inputCurp.style.color = "red";
+            }
+        },
+        programar: function(id) {
+            const radioSeleccionado = document.querySelector('input[name="periodo"]:checked');
+            if (!radioSeleccionado) {
+                Swal.fire('Atención', 'Por favor, selecciona un período antes de guardar.', 'info'); // Mensaje de error
+                return;
+            }
+            const periodoSeleccionado = radioSeleccionado.value;
+           $('#guardar_programa').hide();
+           $('#load_programar_curso').show();
+            $.ajax({
+                type: "POST",
+                url: base_url + "index.php/Agregar/guardarCursoPrograma",
+                dataType: "json",
+                data: {
+                    id_curso_sac: id,
+                    periodo: periodoSeleccionado // Enviar el valor del período seleccionado
+                },
+                success: function(data) {
+                    console.log(data);
+                    if (!data.error) {
+                        Swal.fire("Éxito", data.respuesta, "success");
+                    } else {
+                        Swal.fire("Error", data.respuesta, "error");
+                    }
+                },
+                complete: function(){
+                    $('#guardar_programa').show();
+                    $('#load_programar_curso').hide();
+                },
+                error: function() {
+                    Swal.fire("Error", "Error al guardar comentario.", "error");
+                }
+            });
+        },
+        toggleButtonState: function(state) {
+            const spinner = document.getElementById('spinner');
+            const btnBuscar = document.getElementById('icono');
+            spinner.style.display = state === 'loading' ? "block" : "none";
+            btnBuscar.classList.remove('dripicons-search', 'dripicons-checkmark', 'dripicons-loading');
+        
+            if (state === 'check') btnBuscar.classList.add('dripicons-checkmark');
+            //else if (state === 'loading') btnBuscar.classList.add('dripicons-loading');
+            //else btnBuscar.classList.add('dripicons-search');
+        },
+        consultarCURP: function() {
+           
+
+            const inputCurp = document.getElementById('curp');
+
+            const curp = inputCurp.value;
+        
+            if (curp.length !== 18) {
+                Swal.fire("Error", 'Ingresa una CURP válida.', "error");
+                $("#formParticipante")[0].reset();
+                return;
+            }
+        
+            $.ajax({
+                url: api,
+                type: 'POST',
+                dataType: 'json',
+                data: {
+                    curp: curp,
+                    script: 'Bitacora->Script:001/15',
+                    id_clues: '0780',
+                    id_usuario: 7
+                },
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                },
+                success: function(result) {
+                    console.log(result)
+                    if (result.datos) {
+                        Swal.fire({
+                            position: "top-end",
+                            icon: "success",
+                            title: "Validado por RENAPO",
+                            showConfirmButton: false,
+                            timer: 1500
+                        });
+                        inputCurp.style.color = "green";
+                        st.agregar.toggleButtonState('check');
+                        st.agregar.mostrarCamposDatos(result.datos);
+                    }
+                    if (result.error) {
+                        inputCurp.style.color = "red";
+                        st.agregar.toggleButtonState('search');
+                        Swal.fire({
+                            position: "top-end",
+                            icon: "error",
+                            title: result.respuesta,
+                            showConfirmButton: false,
+                            timer: 1500
+                        });
+                        inputCurp.style.color = "red";
+                        st.agregar.toggleButtonState('check');
+                        st.agregar.mostrarCamposDatos(result.datos);
+                    }
         
         
+                },
+                error: function(xhr) {
+                    console.log("Error:", xhr.responseText);
+                    inputCurp.style.color = "red";
+                }
+            });
+        },
+        mostrarCamposDatos: function (datos) {
+            // Rellenar los campos con los datos obtenidos
+            document.getElementById('nombre').value = `${datos.nombre}`;
+            document.getElementById('primer_apellido').value = `${datos.primerApellido}`;
+            document.getElementById('segundo_apellido').value = `${datos.segundoApellido}`;
+            document.getElementById('id_sexo').value = datos.sexo;
+            document.getElementById('fec_nac').value = datos.fechaNacimiento;
+            document.getElementById('rfc').value = datos.CURP.substring(0, 10);
+        },
         cancelarTurno: function(){
             Swal.fire({
                 title: "¿Está seguro de que desea cancelar?",
@@ -90,6 +232,7 @@ st.agregar = (function () {
                 }
             }
         },
+ 
         saveTempccp: function(){
             
             $('#cpp').on('change', function() {
@@ -165,7 +308,98 @@ st.agregar = (function () {
           // convioerte todo los de los inputs a mayusculas
           toUpperCase:function(element){
             element.value = element.value.toUpperCase();
-        }
+        },
+        formConfigurarCurso: function(){
+            $('#btn_guardar_conf').on('click', function() {
+                $("#btn_guardar_conf").hide();
+                $("#btn_guardar_load").show();
+                let tableData = [];
+            
+                // Itera sobre cada fila en el cuerpo de la tabla
+                $('tbody tr').each(function() {
+                    let rowData = {
+                        name: $(this).find('td:first').text(),  // Nombre del curso
+                        id_curso: $(this).find('input[name^="id_curso"]').val(), // Fecha de inicio
+                        timeopen: $(this).find('input[name^="timeopen"]').val(), // Fecha de inicio
+                        timeclose: $(this).find('input[name^="timeclose"]').val(), // Fecha de fin
+                       // timelimit: $(this).find('td:nth-child(4)').text(), // Límite de tiempo
+                       // visible: $(this).find('input[type="checkbox"]').is(':checked') ? 1 : 0 // Si está visible
+                    };
+            
+                    tableData.push(rowData);
+                });
+                let id_curso = $("#id_curso").val();
+                let fec_inicio = $("#fec_inicio").val();
+                let fec_fin = $("#fec_fin").val();
+                if(fec_inicio > fec_fin){
+                    Swal.fire("Error", "Fecha inicio debe ser mayor a Fecha fin", "error");
+                    $("#btn_guardar_conf").show();
+                    $("#btn_guardar_load").hide();
+                    return
+                }
+                $.ajax({
+                    url:  base_url + "index.php/Agregar/formConfigurarCurso",
+                    type: 'POST',
+                    data: { tableData: tableData, id_curso:id_curso, fec_inicio, fec_fin },
+                    dataType: 'json',
+                    success: function(response) {
+                        if (!response.error) {
+                            Swal.fire("Éxito", "Datos guardados correctamente.", "success");
+                            //window.location.reload();
+                            window.location.href = base_url + "index.php/Principal/Matricular/";
+                        } else {
+                            Swal.fire("Error", "No se pudo guardar la configuración.", "error");
+                        }
+                        $("#btn_guardar_conf").show();
+                        $("#btn_guardar_load").hide();
+                    },
+                    error: function(xhr, status, error) {
+                        Swal.fire("Error", "Ocurrió un error en la solicitud: " + error, "error");
+                    }
+                });
+             
+             
+            });
+            
+        },
+        formParticipante: function(){
+            $("#formParticipante").submit(function (e) {
+                e.preventDefault();   
+                $("#btn_guardar_detenido").hide();             
+                $("#btn_load_detenido").show();             
+                $.ajax({
+                    type: "POST",
+                    url: base_url + "index.php/Principal/guardarParticipantes",
+                    data: $(this).serialize(),
+                    dataType: 'json',
+                    success: function (response) {
+                        console.log(response);
+                        console.log(response.error);
+                        console.log(response.respuesta);
+                        if(response.error == false){
+                            Swal.fire("Exitó", response.respuesta, "success");
+                            $('#formParticipante')[0].reset();
+                            $('#modalDetenidos').modal('hide');
+                            window.location.reload();
+                                                    
+                        }else{
+                            Swal.fire("Error", response.respuesta , "error"); 
+                            //$("#formParticipante")[0].reset();                         
+                            return false;
+                        } 
+                    },
+                    complete: function(){
+                        $("#btn_guardar_detenido").show();             
+                        $("#btn_load_detenido").hide();   
+                    },
+                    error: function (response,jqXHR, textStatus, errorThrown) {
+                        var res= JSON.parse (response.responseText);
+                       //  console.log(res.message);
+                        Swal.fire("Error", '<p> '+ res.message + '</p>');  
+                   }
+                });
+            });
+        },
         
     }
 })();

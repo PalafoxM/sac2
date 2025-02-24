@@ -5,10 +5,12 @@ namespace App\Models;
 use CodeIgniter\Model;
 use App\Libraries\Bitacoracontrol;
 //use App\Libraries\Validacurp;
+use App\Libraries\Funciones;
 
 class Mglobal extends Model {
 
     public $errorConexion = false;
+    
 
     //protected $table = 'zeus_usuarios';
 
@@ -40,89 +42,149 @@ class Mglobal extends Model {
      */
     public function getTabla($data)
     {
+        $client = \Config\Services::curlrequest();
+        $session = \Config\Services::session();
         $response = new \stdClass();
         $response->error = true;
         $response->respuesta = 'Error|Parámetros de entrada';
 
-        /* Busqueda por query directa */
-        if (isset($data['query'])){
-            try {
-                $query = $this->db->query($data['query'])->getResult();
-            } catch (\Throwable $th) {
-                $response->error = true;
-                $response->respuesta = 'Fallo en la consulta a base de datos';
-                $response->errorDB = $th;
-                return $response;        
+        $jwt = new Funciones();
+        $userData = [
+            'id' => $session->id_perfil,
+            'nombre' => $session->nombre_completo
+        ];
+        $token = $jwt->generateToken($userData);
+        // Verificar el token
+        $verificacion = $jwt->verifyToken($token);
+        if (!$verificacion) {
+            echo "Token inválido";
+            
+        } 
+        try {
+            // Hacemos la petición POST a Node.js
+            $baseUrl = env('NODE_API_BASE_URL');
+            $apiResponse = $client->post($baseUrl.'getTabla', [
+                'headers' => [
+                    'Authorization' => 'Bearer ' . $token  // Agregar el token al header
+                ],
+                'json' => ['data'=> $data]
+            ]);
+    
+            $result = json_decode($apiResponse->getBody());
+          
+            if (isset($result->error) && $result->error === false) {
+                $response->error = false;
+                $response->respuesta = $result->respuesta ?? 'Operación exitosa';
+                $response->data = $result->data ?? [];
+            } else {
+                $response->respuesta = $result->respuesta ?? 'Error desconocido en la respuesta';
             }
-
-            $response->query = $this->db->getLastQuery()->getQuery();
-            $response->data = $query;
-            $response->error = false;
-            $response->respuesta = empty($query) ? 'No se encontraron resultados que coincidan con la busqueda':'Consulta exitosa';
-            return $response;
-        }
-
-        if (!isset($data['tabla'])) return $response;
-        $builder = $this->db->table($data['tabla']);
-
-        if (isset($data['select']))
-        $builder->select($data['select']);          //ejemplo: ['field1','field2']
-
-        if(isset($data['join']))                    //ejemplo [['table','conection and rules','type']]
-        {
-            foreach ($data['join'] as $key ) {
-                $builder->join($key[0],$key[1],isset($key[2])?$key[2]:'right');
-            }
-        }
-         
-        if (isset($data['where']))
-        $builder->where($data['where']);            //ejemplo: ['name' => $name, 'title' => $title, 'status' => $status];
         
-        if (isset($data['whereIn'])){               //ejemplo: [[ 'name',aray() ]];
-            foreach ($data['whereIn'] as $whereIn) {
-                $builder->whereIn($whereIn[0],$whereIn[1]);
-            }
+            } catch (\Exception $e) {
+            log_message('error', 'Error al conectar con la API de Node.js: ' . $e->getMessage());
+            $response->respuesta = 'Error|Conexión fallida con Node.js';
         }
-        if (isset($data['whereNotIn'])){               //ejemplo: [[ 'name',aray() ]];
-            foreach ($data['whereNotIn'] as $whereNotIn) {
-                $builder->whereNotIn($whereNotIn[0],$whereNotIn[1]);
-            }
-        }
-        
-        if (isset($data['like']))
-        $builder->like($data['like']);              //ejemplo: ['name' => $name, 'title' => $title, 'status' => $status];
-        
-        if (isset($data['orlike']))
-        $builder->orLike($data['orlike']);          //ejemplo: ['name' => $name, 'title' => $title, 'status' => $status];
-
-        if (isset($data['order']))
-        $builder->orderBy($data['order']);          //ejemplo :'title DESC, name ASC'
-
-        if (isset($data['groupBy']))                // ejemplo : ["title", "date"]
-        $builder->groupBy($data['groupBy']);
-        
-        if (isset($data['limit'])) {                //ejemplo :10 o ['start' => (int), 'length' => (int)] */
-            if (isset($data['limit']['length'])&&isset($data['limit']['start']))
-                $builder->limit($data['limit']['length'], $data['limit']['start']);
-            else
-                $builder->limit($data['limit']);
-        }
-        
-        $query = $builder->get()->getResult();
-        $response->query = $this->db->getLastQuery()->getQuery();
-        $response->data = $query;
-        
-        if (empty($query) || count($query) == 0)
-        {   
-            $response->error = false;
-            $response->respuesta = 'No se encontraron resultados que coincidan con la busqueda';
-            return $response;    
-        }
-        $response->error = false;
-        $response->respuesta = 'Consulta exitosa';
         return $response;
     }
+   
+    public function createCurso($data, $tabla)
+    {
+        $client = \Config\Services::curlrequest();
+        $session = \Config\Services::session();
+        $response = new \stdClass();
+     
 
+        $jwt = new Funciones();
+        $userData = [
+            'id' => $session->id_perfil,
+            'nombre' => $session->nombre_completo
+        ];
+        $token = $jwt->generateToken($userData);
+        // Verificar el token
+        $verificacion = $jwt->verifyToken($token);
+        if (!$verificacion) {
+            echo "Token inválido";
+            
+        } 
+        try {
+            // Realizamos la solicitud POST a Node.js
+            $baseUrl = env('NODE_API_BASE_URL');
+            $apiResponse = $client->post($baseUrl.$tabla , [
+                'headers' => [
+                    'Authorization' => 'Bearer ' . $token // Agregar el token al header si es necesario
+                ],
+                'json' => ['data' => $data]
+            ]);
+        
+            $result = json_decode($apiResponse->getBody());
+           
+            if ($result->error) {
+                $response->error = true;
+                $response->respuesta = "Error en la respuesta de la API: " . $result->respuesta;
+                $response->respuesta;
+            } else {
+                $response->error = false;
+                $response->respuesta = 'Consulta exitosa';
+                $response->data = $result->data;
+                //echo json_encode($response);
+                return $response;
+            }
+        } catch (\Exception $e) {
+            log_message('error', 'Error al conectar con la API de Node.js: ' . $e->getMessage());
+        }
+        
+       return $response;
+    }
+    public function getCategories($tabla = 'getCategories')
+    {
+        $client = \Config\Services::curlrequest();
+        $session = \Config\Services::session();
+        $response = new \stdClass();
+     
+
+        $jwt = new Funciones();
+        $userData = [
+            'id' => $session->id_perfil,
+            'nombre' => $session->nombre_completo
+        ];
+        $token = $jwt->generateToken($userData);
+        // Verificar el token
+        $verificacion = $jwt->verifyToken($token);
+        if (!$verificacion) {
+            echo "Token inválido";
+            
+        } 
+        $data = ['categoryId' => 135];
+    
+        try {
+            // Realizamos la solicitud POST a Node.js
+            $baseUrl = env('NODE_API_BASE_URL');
+            $apiResponse = $client->post($baseUrl.$tabla , [
+                'headers' => [
+                    'Authorization' => 'Bearer ' . $token // Agregar el token al header si es necesario
+                ],
+                'json' => ['data' => $data]
+            ]);
+        
+            $result = json_decode($apiResponse->getBody());
+          
+            if ($result->error) {
+                $response->error = true;
+                $response->respuesta = "Error en la respuesta de la API: " . $result->respuesta;
+            } else {
+                $response->error = false;
+                $response->respuesta = 'Creado correctamente';
+                $response->data = $result->data;
+                //echo json_encode($response);
+                return $response;
+            }
+        } catch (\Exception $e) {
+            log_message('error', 'Error al conectar con la API de Node.js: ' . $e->getMessage());
+           
+        }
+        
+       return $response;
+    }
     /**
      *   saveTabla
      *   Función para insertar o editar información de los catálogos
@@ -142,6 +204,7 @@ class Mglobal extends Model {
     public function saveTabla($data,$config,$bitacora)
     {
         $response = new \stdClass();
+        $session = \Config\Services::session();
         $response->error = true;
         $response->respuesta = 'Error|Parámetros de entrada';
         $error = false;
@@ -154,69 +217,53 @@ class Mglobal extends Model {
 
         $Bitacoracontrol = new Bitacoracontrol();
 
-        //verificar registro si es edición
-        if ($config['editar'])
-        {
-            $builder = $this->db->table($config['tabla']);
-            $query = $builder->getWhere($config['idEditar'])->getResult();
-            if ( !$query || count($query) == 0)
-            {
-                $response->respuesta = 'Error|No se encontró el registro de edición';
-                $response->query = $this->db->getLastQuery()->getQuery();
-                return $response;
-            }
-        }
-        
-        $this->db->transBegin();
-        
-        $builder = $this->db->table($config['tabla']);
-        if ($config['editar']){
-            if(!$builder->update($data, $config['idEditar']))
-            {
-                $response->respuesta = 'Error|registro no editado';
-                $error = true;
-                log_message('critical',"DB Query: ".$this->db->getLastQuery()->getQuery());
-                log_message('critical',"DB error: ".$this->db->error());
-            }
-            $response->idRegistro = $config['idEditar'];
-            $llave = '';
-            foreach ($config['idEditar'] as $key => $value) {
-                $campo = $key;
-                $llave = $value;
-            }
-            if(!$response->bitacora=$Bitacoracontrol->RegistraUpdate($data, $bitacora['script'], $this->session->id_usuario, $config['tabla'], $llave))
-            {
-                $error = true;
-                $response->respuesta='Error|Registro de actualizar bitacora';
-            }
-        }
-        else {
-            if (!$builder->insert($data))
-            {                
-                $response->respuesta = 'Error|registro no insertado';
-                $error = true;
-            }
-            $response->idRegistro = $this->db->insertID();
-            if(!$response->bitacora=$Bitacoracontrol->RegistraInsert($data, $bitacora['script'], $this->session->id_usuario, $config['tabla'], $response->idRegistro))
-            {
-                $error = true;
-                $response->respuesta='Error|Registro de insertar bitacora';
-            }
-        }
+        $client = \Config\Services::curlrequest();
+        $jwt = new Funciones();
+        $userData = [
+            'id'     => $session->get('id_usuario'),
+            'nombre' => $session->get('nombre_completo')
+        ];
+        $token = $jwt->generateToken($userData);
+        // Verificar el token
+        $verificacion = $jwt->verifyToken($token);
+        if (!$verificacion) {
+            echo "Token inválido";
+            
+        } 
+       
+    try {
+        // Hacemos la petición POST a Node.js
+        $baseUrl = env('NODE_API_BASE_URL');
+        $apiResponse = $client->post($baseUrl . 'saveTabla', [
+            'headers' => [
+                'Authorization' => 'Bearer ' . $token  // Agregar el token al header
+            ],
+            'json' => [
+                'data'     => $data,
+                'config'   => $config,
+                'bitacora' => $bitacora
+            ]
+        ]);
 
-        if ($this->db->transStatus() === FALSE || $error)
-        {
-            $this->db->transRollback();
-        }
-        else
-        {
-            $this->db->transCommit();
+        // Decodificamos la respuesta de Node.js
+        $result = json_decode($apiResponse->getBody());
+      
+        if ($result->error === false) {
             $response->error = false;
             $response->respuesta = 'Registro guardado correctamente';
-            $response->query = $this->db->getLastQuery()->getQuery();
+            $response->idRegistro = $result->idRegistro;
+        } else {
+            $response->respuesta = 'Error|No se pudo guardar el registro';
         }
-        return $response;
+
+    } catch (\Exception $e) {
+        log_message('error', 'Error al conectar con la API de Node.js: ' . $e->getMessage());
+        $response->respuesta = 'Error|Conexión fallida con Node.js';
     }
+
+    return $response;
+    }
+
 
     /**
      *    insertBatch
@@ -520,17 +567,9 @@ class Mglobal extends Model {
      *   llave        (array) ["llave_1","llave_2"]
      *  ]
      */
-    public function localUpdateInsertTabla($dataInsert = array(), $dataConfig = array(), $dataBitacora = array(), $nombreElemento = false, &$db, &$response, &$bitacora = array() )
+    /* public function localUpdateInsertTabla($dataInsert = array(), $dataConfig = array(), $dataBitacora = array(), $nombreElemento = false, &$db, &$response, &$bitacora = array() )
     {
-        /** 
-        $dataConfig = [
-            "tabla"         => "cima_auxiliares.lab_solicitud_estudios",
-            "paramIdTabla"  => "id_lab_solicitud_estudios",
-            "paramDelete"   => ["visible"=>0],
-            "whereDelete"   => ["id_lab_solicitud"=>$response->idLaboratorio, "visible"=>1],
-            "llave"         => ["id_lab_solicitud","id_lab_estudio"],
-        ];
-        */
+     
         //step 1: delete all
         $elementos = $db->table($dataConfig['tabla'])->where($dataConfig['whereDelete'])->get()->getResult();
         
@@ -626,7 +665,7 @@ class Mglobal extends Model {
             return false;
         }
         return true;
-    }
+    } */
 
     /**
      * función que realiza el guardado de la bitacora de una transacción completa
@@ -655,4 +694,5 @@ class Mglobal extends Model {
 
         return $errorDB;
     }
+ 
 }
