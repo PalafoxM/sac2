@@ -46,7 +46,7 @@
                             <div class="row">
                                     <div class="col-lg-3">
                                     <div class="d-flex justify-content-start">
-                                            <button onclick="ini.inicio.enviarCorreo()" id="btn_clean_detenidos"
+                                            <button onclick="ini.inicio.enviarCorreo2()" id="btn_clean_detenidos"
                                                 class="btn btn-success me-2">Enviar Correo Masivo</button>
                                             <button id="btn_clean_load" style="display:none"
                                                 class="btn btn-gradient-success" type="button" disabled>
@@ -96,7 +96,7 @@
                                                     onclick="ini.inicio.deleteParticipante(<?=$u->id_participante?>)"><i
                                                         class="mdi mdi-trash-can text-danger font-18"></i></a>
                                                 <a href="javascript:void(0);" title="Enviar credenciales"
-                                                    onclick="ini.inicio.deleteParticipante(<?=$u->id_participante?>)"><i
+                                                    onclick="ini.inicio.enviarCorreo(<?=$u->id_participante?>)"><i
                                                         class="mdi mdi-email-mark-as-unread text-warning font-18"></i></a>
                               
 

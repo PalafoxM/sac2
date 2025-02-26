@@ -64,36 +64,101 @@ class Usuario extends BaseController
 
     public function enviarCorreo()
     {
-
+        $session = \Config\Services::session();
+        $response = new \stdClass();
+        $response->error = true;
+        $principal = new Mglobal;
         $mail = new PHPMailer(true);
+        $data = array();
+        $id_participante = $this->request->getPost('id_participante');
+        $participante = $principal->getTabla(['tabla' => 'participantes', 'where' => ['visible' => 1, 'id_participante'=>$id_participante]]);
+        if(isset($participante->data) && empty($participante->data)){
+            $response->respuesta = 'Id de usuario no encontrador favor de contactar al Administrador';
+            return $this->respond($response);
+        }
+        $usuario = $participante->data[0];
+        $hoy = date("Y-m-d H:i:s"); 
+        $dataInsert = [
+            'id_sexo'               => (int)$usuario->id_sexo,           
+            'id_nivel'              => (int)$usuario->id_nivel,           
+            'id_dependencia'        => (int)$usuario->id_dependencia,  
+            'id_perfil'             => 8,           
+            'id_padre'              => (int)$session->id_perfil,           
+            'usuario'               => $usuario->curp,           
+            'nombre'                => $usuario->nombre,           
+            'primer_apellido'       => $usuario->primer_apellido,           
+            'segundo_apellido'      => $usuario->segundo_apellido,             
+            'correo'                => $usuario->correo,           
+            'curp'                  => $usuario->curp, 
+            'contrasenia'           => md5($usuario->curp),
+            'rfc'                   => $usuario->rfc,             
+            'denominacion_funcional'=> $usuario->denominacion_funcional,             
+            'area'                  => $usuario->area,             
+            'jefe_inmediato'        => $usuario->jefe_inmediato,             
+            'fec_nac'               => $usuario->fec_nac,            
+            'fec_registro'          => $hoy   
+        ];   
+        $dataBitacora = ['id_user' => $session->id_usuario, 'script' => 'Agregar.php/guardaUsuario'];
+        $dataConfig = [
+            "tabla"=>"usuario",
+            "editar"=>false,
+            //"idEditar"=>['id_usuario'=>$data['id_usuario']]
+        ];
+        $response = $this->globals->saveTabla($dataInsert,$dataConfig,$dataBitacora);  
+        var_dump($response);
+        $dataConfig = [
+            "tabla"=>"participantes",
+            "editar"=>true,
+            "idEditar"=>['id_participante'=>$id_participante]
+        ];
+        $response = $this->globals->saveTabla(['visible'=>0],$dataConfig,$dataBitacora);
+        $contrasenia = md5($usuario->curp);
+        var_dump($response);
+        die();
         try {
-            // Configuración del servidor SMTP
-          
-            $mail->isSMTP();
-            $mail->SMTPDebug = 2;
-            $mail->Host       = 'smtp.gmail.com'; // Servidor SMTP
-            $mail->SMTPAuth   = true;
-            $mail->Username   = 'palafox.marin31@gmail.com'; // Cambia esto
-            $mail->Password   = 'gfaw dhyc twxa bwpn'; // Cambia esto (o usa una contraseña de aplicación gfaw dhyc twxa bwpn)
-            $mail->SMTPSecure = 'tls';
-            //$mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-            //$mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
-            $mail->Port       = 587;
-            //$mail->Port       = 465;
-
-            // Configurar el correo
-            $mail->setFrom('palafox.marin@hotmail.com', 'Agustin Palafox Marin');
-            $mail->addAddress('palafox.marin@hotmail.com');
-            $mail->Subject = 'Asunto del correo';
-            $mail->isHTML(true);
-            $mail->Body    = 'Este es el cuerpo del mensaje en <b>HTML</b>.';
-
+            $mail->isSMTP(); // Usar SMTP para el envío
+            $mail->SMTPDebug = 2; // Habilitar depuración (2 para mensajes de cliente y servidor)
+            $mail->Host = 'smtp.gmail.com'; // Servidor SMTP de Gmail
+            $mail->SMTPAuth = true; // Habilitar autenticación SMTP
+            $mail->Username = 'palafox.marin31@gmail.com'; // Correo electrónico del remitente
+            $mail->Password = 'vxqh wycc fsgg tzvk'; // Contraseña de aplicación o contraseña de Gmail
+            $mail->SMTPSecure = 'tls'; // Usar cifrado TLS
+            $mail->Port = 587; // Puerto SMTP para TLS
+        
+            // Configurar el correo electrónico
+            $mail->setFrom($usuario->curp, 'Sistema de Administración de Capacitación (SAC)');
+            $mail->addAddress('palafox.marin@hotmail.com'); // Correo del destinatario
+            $mail->Subject = 'Credenciales de Acceso al Sistema SAC'; // Asunto del correo
+            $mail->isHTML(true); // Habilitar contenido HTML en el cuerpo del correo
+        
+            // Cuerpo del correo
+            $mail->Body = "
+                <p>Te damos la bienvenida al <strong>Sistema de Administración de Capacitación (SAC)</strong>.</p>
+                <p>A continuación, te proporcionamos tus credenciales de acceso:</p>
+                <ul>
+                    <li><strong>Usuario:</strong> $usuario->curp</li>
+                    <li><strong>Contraseña:</strong> $contrasenia</li>
+                </ul>
+                <p>Puedes acceder al sistema a través del siguiente enlace: <a href='http://172.31.187.142/sac2/'>http://172.31.187.142/sac2/</a></p>
+                <p>Si tienes alguna duda o necesitas asistencia, no dudes en contactarnos.</p>
+                <p>¡Gracias por ser parte de SAC!</p>
+            ";
+        
             // Enviar el correo
-            $mail->send();
-            return 'Correo enviado correctamente.';
+            if ($mail->send()) {
+                $response->error = false;
+                $response->respuesta = "Correo enviado correctamente.";
+            } else {
+                $response->error = true;
+                $response->respuesta = "Error al enviar el correo: " . $mail->ErrorInfo;
+            }
+            return $this->respond($response); // Devolver la respuesta
         } catch (Exception $e) {
-            return "Error al enviar el correo: {$mail->ErrorInfo}";
-        } 
+            // Manejar excepciones
+            $response->error = true;
+            $response->respuesta = "Error inesperado al enviar el correo: " . $e->getMessage();
+            return $this->respond($response);
+        }
 
     }
  

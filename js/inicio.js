@@ -129,17 +129,17 @@ ini.inicio = (function () {
         });
           
         },
-        enviarCorreo: function()
+        enviarCorreo: function(id_participante)
         {
             $.ajax({
                 type: "POST",
                 url: base_url + "index.php/Usuario/enviarCorreo",
                 dataType: "json",
-                data:{id_detenido:1},
+                data:{id_participante},
                 success: function(data) {
                     if (!data.error) {
                         Swal.fire("Éxito", data.respuesta, "success");
-                        window.location.reload();
+                        window.location.href = base_url + 'index.php/Inicio/usuarios';
                     } else {
                         Swal.fire("info",  data.respuesta , "info");
                     }
