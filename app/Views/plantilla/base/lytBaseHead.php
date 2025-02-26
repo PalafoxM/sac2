@@ -133,7 +133,9 @@
                         </div>
                         <ul class="nav">
                             <li class="nav-item"><a class="nav-link" href="<?php echo base_url(); ?>index.php/Agregar/ProgramarCurso">Programar Cursos</a></li>
-                            <li class="nav-item"><a class="nav-link" href="<?php echo base_url(); ?>pages/pages-tour.html">Cursos concluidos</a></li>
+                            <?php if($session->id_perfil != 8): ?>
+                            <li class="nav-item"><a class="nav-link" href="<?php echo base_url(); ?>index.php/Agregar/TablaPrograma">Tabla de Progamación</a></li>
+                            <?php endif; ?>
                             <li class="nav-item"><a class="nav-link" href="<?php echo base_url(); ?>pages/pages-timeline.html">Calificaciones</a></li>
                             <li class="nav-item"><a class="nav-link" href="<?php echo base_url(); ?>pages/pages-treeview.html">Constancias</a></li>
                     
@@ -171,14 +173,17 @@
                     <li class="hidden-sm">
                         <a class="nav-link dropdown-toggle waves-effect waves-light" data-toggle="dropdown" href="javascript: void(0);" role="button"
                             aria-haspopup="false" aria-expanded="false">
-                            English <img src="<?php echo base_url(); ?>assets/images/flags/us_flag.jpg" class="ml-2" height="16" alt=""/> <i class="mdi mdi-chevron-down"></i> 
+                             <i class="fas fa-cart-arrow-down font-20 <?php echo (isset($dscCursos) && !empty($dscCursos))?'text-success':''?>"></i> <i class="mdi mdi-chevron-down"></i> 
                         </a>
                         <div class="dropdown-menu dropdown-menu-right">
-                            <a class="dropdown-item" href="javascript: void(0);"><span> German </span><img src="<?php echo base_url(); ?>assets/images/flags/germany_flag.jpg" alt="" class="ml-2 float-right" height="14"/></a>
-                            <a class="dropdown-item" href="javascript: void(0);"><span> Italian </span><img src="<?php echo base_url(); ?>assets/images/flags/italy_flag.jpg" alt="" class="ml-2 float-right" height="14"/></a>
-                            <a class="dropdown-item" href="javascript: void(0);"><span> French </span><img src="<?php echo base_url(); ?>assets/images/flags/french_flag.jpg" alt="" class="ml-2 float-right" height="14"/></a>
-                            <a class="dropdown-item" href="javascript: void(0);"><span> Spanish </span><img src="<?php echo base_url(); ?>assets/images/flags/spain_flag.jpg" alt="" class="ml-2 float-right" height="14"/></a>
-                            <a class="dropdown-item" href="javascript: void(0);"><span> Russian </span><img src="<?php echo base_url(); ?>assets/images/flags/russia_flag.jpg" alt="" class="ml-2 float-right" height="14"/></a>
+                            <?php if(isset($dscCursos) && !empty($dscCursos)):?>
+                                    <?php foreach($dscCursos as $k):?>
+                                        <a class="dropdown-item uitooltip" data-toggle="tooltip" data-placement="top" title="<?= 'PERIODO '.$k['periodo']?>" href="<?= base_url().'index.php/Agregar/detalleCurso/'.$k['id'] ?>"><span><?= $k['dsc_curso']?></span><img src="<?php echo base_url().$k['img']; ?>" alt="" class="ml-2 float-right" height="14"/></a>
+                                    <?php endforeach;?>
+                            <?php endif; ?>
+                            <?php if(isset($dscCursos) && empty($dscCursos)):?>
+                                     <span class="dropdown-item">Sin cursos en el carrito</span>
+                            <?php endif; ?>
                         </div>
                     </li>
 

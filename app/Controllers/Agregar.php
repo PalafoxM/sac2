@@ -31,7 +31,33 @@ class Agregar extends BaseController {
         }
     }
 
-    private function _renderView($data = array()) {     
+    private function _renderView($data = array()) {
+        $session = \Config\Services::session();
+        $Mglobal = new Mglobal;   
+        $misCursos = $Mglobal->getTabla(['tabla' => 'vw_estudiante_curso', 'where' => ['visible' => 1, 'id_usuario' => $session->id_usuario ]]);
+        $data["dscCursos"] = []; // Inicializamos como un arreglo vacío
+
+        if (isset($misCursos->data) && !empty($misCursos->data)) {
+            foreach ($misCursos->data as $c) {
+                // Obtener la información del curso
+                $miCurso = $Mglobal->getTabla([
+                    'tabla' => 'cursos_sac', 
+                    'where' => [
+                        'visible' => 1, 
+                        'id_cursos_sac' => $c->id_curso 
+                    ]
+                ]);
+                if (isset($miCurso->data) && !empty($miCurso->data)) {
+                    // Agregar los datos del curso al arreglo
+                    $data["dscCursos"][] = [
+                        'dsc_curso' => $miCurso->data[0]->dsc_curso,
+                        'img'       => $miCurso->data[0]->img_ruta,
+                        'id'        => $miCurso->data[0]->id_cursos_sac,
+                        'periodo'   => $c->id_periodo
+                    ];
+                }
+            }
+        }   
         $data = array_merge($this->defaultData, $data);
         echo view($data['layout'], $data);               
     }
@@ -163,6 +189,10 @@ class Agregar extends BaseController {
             $curp  = $this->globals->getTabla(['tabla' => 'usuario', 'where' => ['curp' => $data['curp'], 'visible' =>1]]); 
             if( !empty($curp->data) ){
                 throw new Exception("El campo de <strong>CURP</strong> ya existe en la base de datos");
+            }
+            $existente  = $this->globals->getTabla(['tabla' => 'usuario', 'where' => ['usuario' => $data['usuario'], 'contrasenia' => md5($data['contrasenia']),  'visible' =>1]]); 
+            if( !empty($existente->data) ){
+                throw new Exception("El <strong> usuario y/o contraseña</strong> ya existe en la base de datos, favor de cambiar los datos");
             }
         }
      
@@ -393,27 +423,37 @@ class Agregar extends BaseController {
         $Mglobal   = new Mglobal;
         $data =  $this->request->getPost();
         $hoy = date("Y-m-d H:i:s"); 
-        $where =['visible' => 1, 'id_curso' => $data['id_curso_sac'], 'id_periodo' =>$data['periodo'], 'id_usuario'=>$session->id_usuario ];
-        $registro    = $Mglobal->getTabla(['tabla' => 'estudiante_curso', 'where' => $where]);
-    
-        if(isset($registro->data) && !empty($registro->data)){
-            $response->error = true;
-            $response->respuesta = 'El Usuario ya tiene registrado este curso y periodo';
-            return $this->respond($response);
+        if($data['editar'] == 0 ){
+            $where =['visible' => 1, 'id_curso' => $data['id_curso_sac'], 'id_periodo' =>$data['periodo'], 'id_usuario'=>$session->id_usuario ];
+            $registro    = $Mglobal->getTabla(['tabla' => 'estudiante_curso', 'where' => $where]);
+        
+            if(isset($registro->data) && !empty($registro->data)){
+                $response->error = true;
+                $response->respuesta = 'El Usuario ya tiene registrado este curso y periodo';
+                return $this->respond($response);
+            }
         }
+     
         $dataConfig = [
             "tabla"=>"estudiante_curso",
-            "editar"=>false,
-            // "idEditar"=>['id_usuario'=>$data['id_usuario']]
+            "editar"=>($data['editar']==1)?true:false,
+             "idEditar"=>['id_estudiante_curso'=>$data['id_periodo_editar']]
         ];
-        $Insert = [
-            'id_curso'      => (int)$data['id_curso_sac'],                      
-            'id_periodo'    => (int)$data['periodo'],                      
-            'id_usuario'    => (int)$session->id_usuario,                      
-            'id_dependencia'=> (int)$session->id_dependencia,                      
-            'usu_reg'       => (int)$session->id_usuario,                      
-            'fec_reg'       => $hoy   
-        ];
+        if($data['editar']==0){
+            $Insert = [
+                'id_curso'      => (int)$data['id_curso_sac'],                      
+                'id_periodo'    => (int)$data['periodo'],                      
+                'id_usuario'    => (int)$session->id_usuario,                                         
+                'usu_reg'       => (int)$session->id_usuario,                      
+                'fec_reg'       => $hoy   
+            ];
+        }else{
+            $Insert = [     
+                'id_periodo'    => (int)$data['periodo'],                                                              
+                'usu_act'       => (int)$session->id_usuario,                       
+            ];
+        }
+       
        $dataBitacora = ['id_user' =>  $session->id_usuario, 'script' => 'Agregar.php/guardaCurso'];
        $result = $Mglobal->saveTabla($Insert,$dataConfig,$dataBitacora);
        if(!$result->error){
@@ -425,6 +465,7 @@ class Agregar extends BaseController {
     }
     public function detalleCurso($id_cursos_sac = null) {
         $session     = \Config\Services::session();
+   
         $response    = new stdClass();
         $response->error = true ;
         $response->respuesta = 'Error| Error al generar la consulta' ;
@@ -442,9 +483,84 @@ class Agregar extends BaseController {
         if(!$categoria->error){
            $data['categoria']= (isset($categoria->data) && !empty($categoria->data))?$categoria->data:[];
         }
-       
+        $data['registro'] = false;
+        if($id_cursos_sac){
+            $result = $Mglobal->getTabla(['tabla'=>'estudiante_curso', 'where' =>['id_curso' => $id_cursos_sac, 'id_usuario' => $session->id_usuario, 'visible' => 1,]]);
+            if(isset($result->data) && !empty($result->data)){
+               $data['registro'] = true;
+            }
+        }
+        $usuRegCurso   = $Mglobal->getTabla(['tabla' => 'estudiante_curso', 'where' => ['visible' => 1, 'id_curso' => $id_cursos_sac, 'id_usuario' => $session->id_usuario]]);
+        if(isset( $usuRegCurso->data) && !empty( $usuRegCurso->data)){
+           $data['id_periodo_editar'] = $usuRegCurso->data[0]->id_estudiante_curso;
+        }
+
         $data['scripts'] = array('agregar');
         $data['contentView'] = 'secciones/vDetalleProgramar';                
+        $this->_renderView($data);
+    }
+    public function TablaPrograma() {
+        $session     = \Config\Services::session();
+        $response    = new stdClass();
+        $Mglobal   = new Mglobal;
+        $data = [];
+        $data['usuario'] = [];
+
+        // Obtener los datos de la vista
+        if($session->id_perfil == 1):
+        $cursoDB = $Mglobal->getTabla([
+            'tabla' => 'vw_estudiante_curso', 
+            'where' => [
+                'visible' => 1, 
+            ]
+        ]);
+        endif;
+        if($session->id_perfil != 1):
+        $cursoDB = $Mglobal->getTabla([
+            'tabla' => 'vw_estudiante_curso', 
+            'where' => [
+                'visible' => 1, 
+                'id_dependencia' => $session->id_dependencia
+            ]
+        ]);
+        endif;
+        if (isset($cursoDB->data) && !empty($cursoDB->data)) {
+            // Arreglo temporal para agrupar los datos por usuario
+            $usuarios = [];
+        
+            foreach ($cursoDB->data as $c) {
+                $nombreUsuario = $c->nombre_completo;
+        
+                // Si el usuario no existe en el arreglo, lo inicializamos
+                if (!isset($usuarios[$nombreUsuario])) {
+                    $usuarios[$nombreUsuario] = [
+                        'nombre' => '<h6>'.$nombreUsuario.'</h6>',
+                        'P1' => '',
+                        'P2' => '',
+                        'P3' => '',
+                        'P4' => '',
+                        'P5' => '',
+                        'P6' => '',
+                        'P7' => '',
+                        'P8' => '',
+                        'P9' => ''
+                    ];
+                }
+        
+                $key = 'P' . $c->id_periodo;
+                if (isset($usuarios[$nombreUsuario][$key])) {
+                    // Si ya hay un curso en este periodo, agregamos el nuevo curso separado por una coma
+                    if (!empty($usuarios[$nombreUsuario][$key])) {
+                        $usuarios[$nombreUsuario][$key] .= '<br> ';
+                    }
+                    $usuarios[$nombreUsuario][$key] .= '<span class="badge badge-md badge-soft-purple">'.$c->dsc_curso.'</span>';
+                }
+            }
+
+            $data['usuario'] = array_values($usuarios);
+        }
+        $data['scripts'] = array('agregar');
+        $data['contentView'] = 'secciones/vTablaPrograma';                
         $this->_renderView($data);
     }
     public function ProgramarCurso() {

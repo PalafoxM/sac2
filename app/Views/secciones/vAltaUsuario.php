@@ -31,6 +31,8 @@
                         <div class="card-body">
                             <div class="table-responsive dash-social">
                                 <form id="formAgregarUsuarioTsi" name="formAgregarUsuarioTsi">
+                                    <input type="hidden" value=<?= $editar ?> name="editar">
+                                    <input type="hidden" value="0" name="id_usuario">
                                     <div class="row">
                                         <!-- seccion izquierdo incio -->
                                         <div class="col-md-12 ">
@@ -224,9 +226,9 @@
                                                                     </option>
                                                                     <?php endforeach; ?>
                                                                     <?php elseif ($session->id_perfil == 4): ?>
-                                                                    <option value="6">ENLACE RH NO SAP</option>
-                                                                    <?php elseif ($session->id_perfil == 5): ?>
-                                                                    <option value="5">ENLACE RH SAP</option>
+                                                                    <option value="6" selected>ENLACE RH NO SAP</option>
+                                                                    <?php elseif ($session->id_perfil == 6): ?>
+                                                                    <option value="8" selected >ESTUDIANTE</option>
                                                                     <?php endif; ?>
 
 

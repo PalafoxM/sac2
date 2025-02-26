@@ -47,7 +47,6 @@ st.agregar = (function () {
         
         validarCURP: function()
         {
-            console.log('entro a validar curp');
             const btnBuscar = document.getElementById('icono');
             const inputCurp = document.getElementById('curp');
 
@@ -55,13 +54,10 @@ st.agregar = (function () {
             inputCurp.value = curp; // Convertir a mayúsculas
         
             if (curp.length >= 18) {
-                // Estado de "check" si la CURP tiene longitud suficiente
                 st.agregar.toggleButtonState('check');
-        
                 inputCurp.style.color = "black";
                 st.agregar.consultarCURP();
             } else if (curp.length === 0) {
-                // Reiniciar estado del botón si el campo está vacío
                 st.agregar.toggleButtonState('search');
             } else {
                 // Estado de "cargando" mientras se escribe
@@ -69,6 +65,40 @@ st.agregar = (function () {
                 st.agregar.toggleButtonState('loading');
                 inputCurp.style.color = "red";
             }
+        },
+        btnEliminar :function(id){
+            Swal.fire({
+                title: "¿Está seguro?",
+                text: "¿Desea eliminar el registro?",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#3085d6",
+                cancelButtonColor: "#d33",
+                cancelButtonText: "Cancelar",
+                confirmButtonText: "Eliminar",
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: base_url + "index.php/Usuario/estudianteCurso",
+                        type: "post",
+                        dataType: "json", //expect return data as html from server
+                        data: { id_estudiante_curso: id },
+                        success: function (response, textStatus, jqXHR) {
+                            if (response.error) {
+                                Swal.fire("Atención", response.respuesta, "warning");
+                                return false;
+                            }
+                            Swal.fire("Éxito", response.respuesta, "success");
+                        },
+                        error: function (jqXHR, textStatus, errorThrown) {
+                            alert("error");
+                            console.log("error(s):" + textStatus, errorThrown);
+                            $("#mensajes").html("");
+                        },
+                    });
+                }
+            });
+
         },
         programar: function(id) {
             const radioSeleccionado = document.querySelector('input[name="periodo"]:checked');
@@ -79,18 +109,23 @@ st.agregar = (function () {
             const periodoSeleccionado = radioSeleccionado.value;
            $('#guardar_programa').hide();
            $('#load_programar_curso').show();
+           let editar = $("#editar_detalle").val();
+           let id_periodo_editar = $("#id_periodo_editar").val();
             $.ajax({
                 type: "POST",
                 url: base_url + "index.php/Agregar/guardarCursoPrograma",
                 dataType: "json",
                 data: {
                     id_curso_sac: id,
-                    periodo: periodoSeleccionado // Enviar el valor del período seleccionado
+                    periodo: periodoSeleccionado, // Enviar el valor del período seleccionado
+                    editar,
+                    id_periodo_editar
                 },
                 success: function(data) {
                     console.log(data);
                     if (!data.error) {
                         Swal.fire("Éxito", data.respuesta, "success");
+                        window.location.href = base_url + 'index.php/Agregar/ProgramarCurso';
                     } else {
                         Swal.fire("Error", data.respuesta, "error");
                     }
@@ -115,10 +150,7 @@ st.agregar = (function () {
             //else btnBuscar.classList.add('dripicons-search');
         },
         consultarCURP: function() {
-           
-
             const inputCurp = document.getElementById('curp');
-
             const curp = inputCurp.value;
         
             if (curp.length !== 18) {
@@ -185,6 +217,9 @@ st.agregar = (function () {
             document.getElementById('id_sexo').value = datos.sexo;
             document.getElementById('fec_nac').value = datos.fechaNacimiento;
             document.getElementById('rfc').value = datos.CURP.substring(0, 10);
+            document.getElementById('usuario').value = datos.CURP;
+            document.getElementById('contrasenia').value = datos.CURP;
+            document.getElementById('confirmar_contrasenia').value = datos.CURP;
         },
         cancelarTurno: function(){
             Swal.fire({

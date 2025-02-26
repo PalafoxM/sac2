@@ -28,7 +28,32 @@ class Inicio extends BaseController {
         }
     }
 
-    private function _renderView($data = array()) {     
+    private function _renderView($data = array()) { 
+        $session = \Config\Services::session();
+        $Mglobal = new Mglobal;   
+        $misCursos = $Mglobal->getTabla(['tabla' => 'estudiante_curso', 'where' => ['visible' => 1, 'id_usuario' => $session->id_usuario ]]);
+        $data["dscCursos"] = []; // Inicializamos como un arreglo vacío
+
+        if (isset($misCursos->data) && !empty($misCursos->data)) {
+            foreach ($misCursos->data as $c) {
+                // Obtener la información del curso
+                $miCurso = $Mglobal->getTabla([
+                    'tabla' => 'cursos_sac', 
+                    'where' => [
+                        'visible' => 1, 
+                        'id_cursos_sac' => $c->id_curso 
+                    ]
+                ]);
+                if (isset($miCurso->data) && !empty($miCurso->data)) {
+                    // Agregar los datos del curso al arreglo
+                    $data["dscCursos"][] = [
+                        'dsc_curso' => $miCurso->data[0]->dsc_curso,
+                        'img' => $miCurso->data[0]->img_ruta,
+                        'id' => $miCurso->data[0]->id_cursos_sac
+                    ];
+                }
+            }
+        }  
         $data = array_merge($this->defaultData, $data);
         echo view($data['layout'], $data); 
                       
@@ -41,7 +66,7 @@ class Inicio extends BaseController {
             header('Location:'.base_url().'index.php/Agregar/ProgramarCurso');            
             die();
         }  
-        $data = array();
+        $data        = array();
         $data['scripts'] = array('principal','inicio');
         $data['edita'] = 0;
         $data['nombre_completo'] = $session->nombre_completo; 
@@ -118,6 +143,7 @@ class Inicio extends BaseController {
         $data['cat_nivel'] =$cat_nivel->data;
         $data['cat_dependencia'] =$cat_dependencia->data;
         $data['cat_perfil'] =$cat_perfil->data;
+        $data['editar'] = 0;
         $data['usuario']   = (isset($usuario->data) && !empty($usuario->data))?$usuario->data:[];
         $data['scripts']     = ['principal', 'agregar'];
         $data['contentView'] = 'secciones/vAltaUsuario';

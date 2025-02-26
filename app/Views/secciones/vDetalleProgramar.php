@@ -50,23 +50,45 @@
                 </div>
                 <!--end col-->
             </div>
+            <input type="hidden" value="0" id="editar_detalle" >
+            <input type="hidden" value="<?php echo (isset($id_periodo_editar) && !empty($id_periodo_editar))?$id_periodo_editar:0 ?>" id="id_periodo_editar" >
             <div class="row">
                 <div class="col-lg-12">
                     <div class="card">
                         <div class="card-body">
-
-                            <p class="text-muted font-13 mt-3 mb-2">Seleciones Periodo</p>
-                            <?php if($periodo): ?>
-                            <?php foreach($periodo as $p): ?>
-                            <div class="radio radio-info form-check-inline">
-                                <input type="radio" id="periodo_<?= $p->id_periodo_sac ?>" value="<?= $p->id_periodo_sac ?>" name="periodo" >
-                                <label for="periodo_<?= $p->id_periodo_sac ?>">
-                                    <strong><?= $p->dia_inicio ?> AL <?= $p->dia_fin; ?> DE <?= $p->dsc_mes ?>/ P<?=$p->periodo?></strong>
-                                </label>
+                            <?php if ($registro): ?>
+                            <div class="row" id="mensajePrograma">
+                                <div class="col-lg-6">
+                                    <div class="alert alert-info border-0" role="alert">
+                                        <strong>¡Atención!</strong> Usted ya tiene programado este curso.
+                                    </div>
+                                </div>
+                                <div class="col-lg-3">
+                                    <button type="button" id="btnEditar"
+                                        class="btn btn-primary waves-effect waves-light">Editar</button>
+                                    <button type="button" onclick="st.agregar.btnEliminar(<?php echo (isset($id_periodo_editar) && !empty($id_periodo_editar))?$id_periodo_editar:0 ?>)"
+                                        class="btn btn-danger waves-effect waves-light">Eliminar</button>
+                                </div>
+                                <div class="col-lg-3"></div>
                             </div>
-                            <?php endforeach; ?>
                             <?php endif; ?>
 
+                            <!-- Contenedor de los radios buttons (oculto inicialmente si $registro es true) -->
+                            <div id="radiosContainer" style="<?= $registro ? 'display: none;' : '' ?>">
+                                <p class="text-muted font-13 mt-3 mb-2">Seleccione Periodo</p>
+                                <?php if ($periodo): ?>
+                                <?php foreach ($periodo as $p): ?>
+                                <div class="radio radio-info form-check-inline">
+                                    <input type="radio" id="periodo_<?= $p->id_periodo_sac ?>"
+                                        value="<?= $p->id_periodo_sac ?>" name="periodo">
+                                    <label for="periodo_<?= $p->id_periodo_sac ?>">
+                                        <strong><?= $p->dia_inicio ?> AL <?= $p->dia_fin; ?> DE <?= $p->dsc_mes ?> /
+                                            P<?= $p->periodo ?></strong>
+                                    </label>
+                                </div>
+                                <?php endforeach; ?>
+                                <?php endif; ?>
+                            </div>
                         </div> <!-- end card-body-->
                     </div> <!-- end card-->
                 </div><!-- end col -->
@@ -171,8 +193,17 @@
                 <!--end col-->
             </div>
             <div class="modal-footer" id="guardar_programa">
-                <a href="<?php echo base_url().'index.php/Agregar/ProgramarCurso' ?>" class="btn btn-secondary">Atrás</a>
-                <button type="button" class="btn btn-primary" onclick="st.agregar.programar(<?= $curso->id_cursos_sac?>);">Programar Curso</button>
+                <a href="<?php echo base_url() . 'index.php/Agregar/ProgramarCurso' ?>"
+                    class="btn btn-secondary">Atrás</a>
+
+                <div id="btnYaProgramado" style="<?= !$registro ? 'display: none;' : '' ?>">
+                    <button type="button"  class="btn btn-info" disabled>Usted ya ha programado este
+                        curso</button>
+                </div>
+                <div id="btnProgramarCurso" style="<?= $registro ? 'display: none;' : '' ?>">
+                    <button type="button" class="btn btn-primary"
+                        onclick="st.agregar.programar(<?= $curso->id_cursos_sac ?>);">Programar Curso</button>
+                </div>
             </div>
             <div class="modal-footer" id="load_programar_curso" style="display:none;">
                 <button class="btn btn-gradient-primary" type="button" disabled>
@@ -197,6 +228,14 @@
 <script src="<?= base_url()?>assets/js/jquery.slimscroll.min.js"></script>
 <script src="<?= base_url()?>plugins/apexcharts/apexcharts.min.js"></script>
 
-<script>
 
+<script>
+document.getElementById('btnEditar').addEventListener('click', function() {
+    // Mostrar el contenedor de los radios buttons
+    $('#btnProgramarCurso').show();
+    $('#radiosContainer').show();
+    $('#mensajePrograma').hide();
+    $('#btnYaProgramado').hide();
+    $("#editar_detalle").val(1);
+});
 </script>

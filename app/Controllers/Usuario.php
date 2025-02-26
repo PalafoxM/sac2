@@ -73,8 +73,8 @@ class Usuario extends BaseController
             $mail->SMTPDebug = 2;
             $mail->Host       = 'smtp.gmail.com'; // Servidor SMTP
             $mail->SMTPAuth   = true;
-            $mail->Username   = 'campusgto@guanajuato.gob.mx'; // Cambia esto
-            $mail->Password   = 'pwd.Gt02019Mar'; // Cambia esto (o usa una contraseña de aplicación gfaw dhyc twxa bwpn)
+            $mail->Username   = 'palafox.marin31@gmail.com'; // Cambia esto
+            $mail->Password   = 'gfaw dhyc twxa bwpn'; // Cambia esto (o usa una contraseña de aplicación gfaw dhyc twxa bwpn)
             $mail->SMTPSecure = 'tls';
             //$mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
             //$mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
@@ -207,6 +207,26 @@ class Usuario extends BaseController
         ];
         $response = $this->globals->saveTabla(["visible"=>0],$dataConfig,["script"=>"Usuario.deleteUsuario"]);
         return $this->respond($response);
+    }
+    public function estudianteCurso()
+    {
+        $response = new \stdClass();
+        $response->error = true;
+        $data = $this->request->getPost();
+
+        if (!isset($data['id_estudiante_curso']) || empty($data['id_estudiante_curso'])){
+            $response->respuesta = "No se ha proporcionado un identificador válido";
+            return $this->respond($response);
+        }
+
+        $dataConfig = [
+            "tabla"=>"estudiante_curso",
+            "editar"=>true,
+            "idEditar"=>['id_estudiante_curso'=>$data['id_estudiante_curso']]
+        ];
+        $response = $this->globals->saveTabla(["visible"=>0],$dataConfig,["script"=>"Usuario.deleteUsuario"]);
+        return $this->respond($response);
+
     }
     public function deleteDetenido()
     {
