@@ -112,8 +112,7 @@ class Usuario extends BaseController
         ];
         $response = $this->globals->saveTabla(['visible'=>0],$dataConfig,$dataBitacora);
         $contrasenia = md5($usuario->curp);
-        var_dump($response);
-        die();
+    
         try {
             $mail->isSMTP(); // Usar SMTP para el envío
             $mail->SMTPDebug = 2; // Habilitar depuración (2 para mensajes de cliente y servidor)
