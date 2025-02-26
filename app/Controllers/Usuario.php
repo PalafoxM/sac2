@@ -124,7 +124,7 @@ class Usuario extends BaseController
             $mail->Port = 587; // Puerto SMTP para TLS
         
             // Configurar el correo electrónico
-            $mail->setFrom($usuario->curp, 'Sistema de Administración de Capacitación (SAC)');
+            $mail->setFrom($usuario->correo, 'Sistema de Administración de Capacitación (SAC)');
             $mail->addAddress('palafox.marin@hotmail.com'); // Correo del destinatario
             $mail->Subject = 'Credenciales de Acceso al Sistema SAC'; // Asunto del correo
             $mail->isHTML(true); // Habilitar contenido HTML en el cuerpo del correo
