@@ -94,9 +94,9 @@ class Usuario extends BaseController
             'rfc'                   => $usuario->rfc,             
             'denominacion_funcional'=> $usuario->denominacion_funcional,             
             'area'                  => $usuario->area,             
-            'jefe_inmediato'        => $usuario->jefe_inmediato,             
-            'fec_nac'               => $usuario->fec_nac,            
-            'fec_registro'          => $hoy   
+            'jefe_inmediato'        => $usuario->jefe_inmediato,                      
+            'fec_nac'               => date("Y-m-d", strtotime($usuario->fec_nac)),             
+            'fec_registro'          => $hoy  
         ];   
         $dataBitacora = ['id_user' => $session->id_usuario, 'script' => 'Agregar.php/guardaUsuario'];
         $dataConfig = [
@@ -105,7 +105,6 @@ class Usuario extends BaseController
             //"idEditar"=>['id_usuario'=>$data['id_usuario']]
         ];
         $response = $this->globals->saveTabla($dataInsert,$dataConfig,$dataBitacora);  
-        var_dump($response);
         $dataConfig = [
             "tabla"=>"participantes",
             "editar"=>true,
