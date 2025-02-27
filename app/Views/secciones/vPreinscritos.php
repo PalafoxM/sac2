@@ -43,9 +43,9 @@
                         <!-- Tab panes -->
                         <div class="tab-content">
                             <div class="tab-pane active p-3" id="home-1" role="tabpanel">
-                            <div class="row">
+                                <div class="row">
                                     <div class="col-lg-3">
-                                    <div class="d-flex justify-content-start">
+                                        <div class="d-flex justify-content-start">
                                             <button onclick="ini.inicio.enviarCorreo2()" id="btn_clean_detenidos"
                                                 class="btn btn-success me-2">Enviar Correo Masivo</button>
                                             <button id="btn_clean_load" style="display:none"
@@ -61,7 +61,7 @@
                                     <div class="col-lg-3">
                                     </div>
                                     <div class="col-lg-3">
-                                    
+
                                     </div>
                                 </div>
                                 <br>
@@ -91,14 +91,14 @@
                                                     data-animation="bounce" data-target=".bs-example-modal-lg"
                                                     onclick="ini.inicio.getParticipante(<?=$u->id_participante?>)"><i
                                                         class="mdi mdi-pencil text-success font-18"></i></a>
-                              
+
                                                 <a href="javascript:void(0);" title="Eliminar"
                                                     onclick="ini.inicio.deleteParticipante(<?=$u->id_participante?>)"><i
                                                         class="mdi mdi-trash-can text-danger font-18"></i></a>
                                                 <a href="javascript:void(0);" title="Enviar credenciales"
                                                     onclick="ini.inicio.enviarCorreo(<?=$u->id_participante?>)"><i
                                                         class="mdi mdi-email-mark-as-unread text-warning font-18"></i></a>
-                              
+
 
                                             </td>
                                         </tr>
@@ -159,13 +159,9 @@
                                                     data-animation="bounce" data-target=".bs-example-modal-lg"
                                                     onclick="ini.inicio.getDetenido(<?=$u->id_detenido?>)"><i
                                                         class="mdi mdi-pencil text-success font-18"></i></a>
-                                                <?php if($session->id_usuario != $u->id_detenido):?>
                                                 <a href="javascript:void(0);"
-                                                   
                                                     onclick="ini.inicio.deleteDetenido(<?=$u->id_detenido?>)"><i
                                                         class="mdi mdi-trash-can text-danger font-18"></i></a>
-                                                <?php endif; ?>
-
                                             </td>
                                         </tr>
                                         <?php endforeach; ?>
