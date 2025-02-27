@@ -32,9 +32,11 @@
                             <a href="<?php echo base_url(); ?>index.php/Inicio/altaUsuario"
                                 class="btn btn-gradient-danger px-4 float-right mt-0 mb-3"><i
                                     class="mdi mdi-account-plus-outline mr-2"></i>Agregar</a>
+                                    <?php if($session->id_perfil == 6):?>
                             <button onclick="ini.inicio.cargaCsv()"
                                 class="btn btn-gradient-primary px-4 float-right mt-0 mb-3"><i
                                     class="mdi mdi-plus-circle-outline mr-2"></i>Subir y Procesar</button>
+                                    <?php endif; ?>
                             <h4 class="header-title mt-0">Lista de Usuarios</h4>
                             <div class="table-responsive dash-social">
                                 <table id="usuariosTable" class="table">
