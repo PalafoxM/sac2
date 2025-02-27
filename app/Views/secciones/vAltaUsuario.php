@@ -223,7 +223,7 @@
                                                                     data-toggle="select2" id="id_perfil"
                                                                     name="id_perfil" data-placeholder="Seleccione"
                                                                     style="z-index:100;"
-                                                                    <?= ($session->id_perfil != 1) ? 'disabled' : '' ?>>
+                                                                    <?= ($session->id_perfil == 1) ? '' : 'disabled' ?>>
                                                                     <option value="0">Seleccione</option>
                                                                     <?php if ($session->id_perfil == 1): ?>
                                                                     <?php foreach ($cat_perfil as $p): ?>
