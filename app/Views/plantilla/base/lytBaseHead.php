@@ -92,7 +92,7 @@
                         </div>
                         
                         <ul class="nav">
-                            <?php if($session->id_perfil == 6 || $session->id_perfil == 4): ?>
+                            <?php if($session->id_perfil != 8): ?>
                             <li class="nav-item"><a class="nav-link" href="<?php echo base_url(); ?>index.php/Inicio/usuarios">Lista <?=($session->id_perfil==4)?'Enlace':'Estudiantes'?></a></li>
                             <li class="nav-item"><a class="nav-link" href="<?php echo base_url(); ?>index.php/Inicio/Preinscritos">Detenidos y/o Preinscritos</a></li>
                             <?php endif; ?>

@@ -89,8 +89,14 @@ class Inicio extends BaseController {
         
       
         $globas              = new Mglobal;
-        $detenidos           = $globas->getTabla(['tabla' => 'detenidos', 'where' => ['visible' => 1]]);
-        $participantes         = $globas->getTabla(['tabla' => 'participantes', 'where' => ['visible' => 1]]);
+        if($session->id_perfil == 1){
+            $detenidos           = $globas->getTabla(['tabla' => 'detenidos', 'where' => ['visible' => 1]]);
+            $participantes         = $globas->getTabla(['tabla' => 'participantes', 'where' => ['visible' => 1]]);
+        }else{
+            $detenidos           = $globas->getTabla(['tabla' => 'detenidos', 'where' => ['visible' => 1, 'id_dependencia' => $session->id_dependencia]]);
+            $participantes         = $globas->getTabla(['tabla' => 'participantes', 'where' => ['visible' => 1, 'id_dependencia' => $session->id_dependencia]]);
+        }
+
         $dataDB           = array('tabla' => 'cat_nivel', 'where' => ['visible' => 1]);
         $dependenciaDB    = array('tabla' => 'cat_dependencia', 'where' => ['visible' => 1]);
         $perfilDB         = array('tabla' => 'cat_perfil', 'where' => ['visible' => 1]);
