@@ -70,6 +70,7 @@ class Login extends BaseController {
                 $session->set('id_perfil',$result->data[0]->id_perfil);
                 $session->set('id_padre',$result->data[0]->id_padre);
                 $session->set('id_dependencia',$result->data[0]->id_dependencia);
+                $session->set('cambio_pass',$result->data[0]->cambio_pass);
                 $response->error     = $result->error;
                 $response->respuesta = $result->respuesta;
             }     

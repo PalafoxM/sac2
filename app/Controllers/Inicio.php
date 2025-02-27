@@ -61,12 +61,20 @@ class Inicio extends BaseController {
 
     public function index()
     {        
-        $session = \Config\Services::session(); 
+        $session = \Config\Services::session();
+        $data        = array();
+        if($session->cambio_pass == 0){ 
+            $data['scripts'] = array('inicio');
+            $data['contentView'] = 'secciones/vCambioPass';
+            $data['layout'] = 'plantilla/lytVacio';
+            $this->_renderView($data);
+            die();
+        }
         if($session->id_perfil == 8){
             header('Location:'.base_url().'index.php/Agregar/ProgramarCurso');            
             die();
         }  
-        $data        = array();
+   
         $data['scripts'] = array('principal','inicio');
         $data['edita'] = 0;
         $data['nombre_completo'] = $session->nombre_completo; 
@@ -79,10 +87,7 @@ class Inicio extends BaseController {
         $session = \Config\Services::session();   
         $data = array();
         
-        if($session->id_perfil == 3 || $session->id_perfil == 4){
-            header('Location:'.base_url().'index.php/Inicio');            
-            die();
-        }
+      
         $globas              = new Mglobal;
         $detenidos           = $globas->getTabla(['tabla' => 'detenidos', 'where' => ['visible' => 1]]);
         $participantes         = $globas->getTabla(['tabla' => 'participantes', 'where' => ['visible' => 1]]);
@@ -177,6 +182,7 @@ class Inicio extends BaseController {
             case 6:
             default:
                 $usuarioQuery['where']['id_dependencia'] = $session->id_dependencia;
+                $usuarioQuery['where']['id_perfil'] = 8;
                 break;
         }
     

@@ -10,10 +10,15 @@ st.agregar = (function () {
                 }).join('');
             });
         },
+       
         agregarUsuario: function(){
             $("#formAgregarUsuarioTsi").submit(function (e) {
                 e.preventDefault(); 
+                $("#id_dependencia").prop("disabled", false);
+                $("#id_perfil").prop("disabled", false);
                 var formData = $("#formAgregarUsuarioTsi").serialize();
+                $("#id_dependencia").prop("disabled", true);
+                $("#id_perfil").prop("disabled", true);
                 $("#btn_save").hide();
                 $("#btn_load").show();
                 $.ajax({

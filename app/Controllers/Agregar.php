@@ -247,6 +247,44 @@ class Agregar extends BaseController {
     
         return $valor;
     }
+    public function cambioPassword()
+    {
+        $session = \Config\Services::session();
+        $response = new \stdClass();
+        $Mglobal    = new Mglobal;
+        $response->error = true;
+        $response->respuesta = 'Error| Error al Generar la consulta';
+        $data= $this->request->getPost();
+        if (!isset($data['id_usuario']) || empty($data['id_usuario'])){
+            $response->respuesta = "No se ha proporcionado un identificador válido";
+            return $this->respond($response);
+        }
+        $usuario = $Mglobal->getTabla(["tabla"=>"usuario","where"=>["id_usuario" => $data['id_usuario'], "visible" => 1]])->data[0];
+        if($usuario->contrasenia == md5($data['contrasenia'])){
+            $response->error     = true;
+            $response->respuesta = 'La contraseña no puede ser la misma que ya esta registrada';
+            return $this->respond($response);
+
+        }
+        $dataInsert = [
+            'cambio_pass' =>1,
+            'contrasenia' =>md5($data['contrasenia'])
+        ];
+        $dataConfig = [
+            "tabla"=>"usuario",
+            "editar"=>true,
+            "idEditar"=>['id_usuario'=>$data['id_usuario']]
+        ];
+        $result = $Mglobal->saveTabla($dataInsert,$dataConfig,["script"=>"Usuario.deleteUsuario"]);
+        if(!$result->error){
+            $response->error     = $result->error;
+            $response->respuesta = $result->respuesta;
+
+        }
+        return $this->respond($response);
+    
+
+    }
     public function guardaTurno(){
         $session = \Config\Services::session();
         $response = new \stdClass();

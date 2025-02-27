@@ -1038,10 +1038,56 @@ ini.inicio = (function () {
         
             
         },
+        passwordForm: function(){
+            $('#passwordForm').on('submit', function (e) {
+                e.preventDefault(); // Evita que el formulario se envíe
+                var contrasenia = $('#contrasenia').val();
+                $id_usuario = $("#id_usuario").val();
+                var confirmar_contrasenia = $('#confirmar_contrasenia').val();
+                if(!contrasenia || !confirmar_contrasenia){
+                    Swal.fire("Campo vacios", 'Favor de ingresar contraseña' ,"error");
+                    return;
+                }
+                if (contrasenia != confirmar_contrasenia) { // Cambia "contraseñaCorrecta" por tu contraseña válida
+                    Swal.fire("error", 'La contraseñas no son identicas, Favor de verificar' ,"error");
+                    return;
+                } 
+                $("#btnCambioPass").hide();
+                $("#load_btnCambioPass").show();
+                
+                var formData = $("#passwordForm").serialize();
+                $.ajax({
+                    type: "POST",
+                    url: base_url + "index.php/Agregar/cambioPassword",
+                    data:formData,
+                    dataType: "json",
+                    success: function (response) {
+                        if(!response.error){
+                            Swal.fire("Éxito", '<p> '+ response.respuesta + '</p>', 'success'); 
+                            window.location.href = base_url + 'index.php/Login/cerrar';
+                        }else{
+                            Swal.fire("Atención", '<p> '+ response.respuesta + '</p>', 'error'); 
+                        }
+                       
+                    },
+                    complete: function(){
+                        $("#btnCambioPass").show();
+                        $("#load_btnCambioPass").hide();
+                    },
+                    error: function (response,jqXHR, textStatus, errorThrown) {
+                         var res= JSON.parse (response.responseText);
+                         Swal.fire("Error", '<p> '+ res.message + '</p>', 'error');  
+                    }
+                });
+            });
+
+        },
         agregarUsuario: function(){
             $("#formAgregarUsuarioTsi").submit(function (e) {
                 e.preventDefault(); 
+                $("#id_dependencia").prop("disabled", false);
                 var formData = $("#formAgregarUsuarioTsi").serialize();
+                $("#id_dependencia").prop("disabled", true);
                 $("#btn_save").hide();
                 $("#btn_load").show();
                 $.ajax({
@@ -1301,6 +1347,39 @@ ini.inicio = (function () {
                     }
                   //  ini.inicio.obtenerCategorias(); 
                   ini.inicio.getPeriodos(); 
+                },
+                error: function() {
+                    Swal.fire("Error", "Error al guardar comentario.", "error")
+                }
+            });
+        },
+        getSelectPeriodos: function(){
+            $.ajax({
+                type: "GET",
+                url: base_url + "index.php/Usuario/getSelectPeriodos",
+                dataType: "json",
+                success: function(data) {
+                    console.log(data);
+                    $('#periodos').empty();
+                    $.each(data.periodo, function(index, p) {
+                        $('#periodos').append(
+                            $('<option>', {
+                                value: p.id_periodo_sac,
+                                text: p.dia_inicio + ' AL ' + p.dia_fin + ' DE ' + ini.inicio.obtenerNombreMes(p.mes) + ' P' + p.periodo
+                            })
+                        );
+                    });
+                    $('#periodos').trigger('change.select2');
+                    $('#categoria').empty();
+                    $.each(data.categoria, function(index, p) {
+                        $('#categoria').append(
+                            $('<option>', {
+                                value: p.id_categoria_sac,
+                                text: p.dsc_categoria_sac
+                            })
+                        );
+                    });
+                    $('#categoria').trigger('change.select2');
                 },
                 error: function() {
                     Swal.fire("Error", "Error al guardar comentario.", "error")

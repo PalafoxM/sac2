@@ -55,9 +55,10 @@
                                                                     </div>
                                                                 </span>
                                                                 <input type="text" class="form-control"
-                                                                    oninput="st.agregar.validarCURP()" placeholder="CURP"
-                                                                    aria-label="Username" id="curp" name="curp"
-                                                                    aria-describedby="basic-addon1" autocomplete="off">
+                                                                    oninput="st.agregar.validarCURP()"
+                                                                    placeholder="CURP" aria-label="Username" id="curp"
+                                                                    name="curp" aria-describedby="basic-addon1"
+                                                                    autocomplete="off">
                                                             </div>
 
                                                         </div>
@@ -157,26 +158,29 @@
                                                         </div>
 
                                                         <div class="col-md-6">
-                                                            <div class="mb-6 position-relative" id="">
-                                                                <label for="c" class="form-label">DEPENDENCIA</label>
+                                                            <div class="mb-6 position-relative">
+                                                                <label for="id_dependencia"
+                                                                    class="form-label">DEPENDENCIA</label>
                                                                 <select class="form-control select2"
                                                                     data-toggle="select2" id="id_dependencia"
                                                                     name="id_dependencia" data-placeholder="Seleccione"
-                                                                    style="z-index:100;" readonly>
-                                                                    <option value="0">Seleccione</option>
+                                                                    style="z-index:100;"
+                                                                    <?= ($session->id_perfil == 1 || $session->id_perfil == 4 ) ? '' : 'disabled' ?>>
                                                                     <?php foreach ($cat_dependencia as $dep): ?>
-                                                                        <option value="<?php echo $dep->id_dependencia; ?>" 
-                                                                                <?php if ($session->id_dependencia == $dep->id_dependencia) echo 'selected'; ?>>
-                                                                            <?php echo $dep->dsc_dependencia ?>
-                                                                        </option>
+                                                                    <option value="<?= $dep->id_dependencia; ?>"
+                                                                        <?= ($session->id_perfil != 1 && $session->id_dependencia == $dep->id_dependencia) ? 'selected' : '' ?>>
+                                                                        <?= htmlspecialchars($dep->dsc_dependencia) ?>
+                                                                    </option>
                                                                     <?php endforeach; ?>
                                                                 </select>
                                                             </div>
                                                         </div>
+
                                                     </div>
                                                     <div class="row">
                                                         <div class="col-md-3">
                                                             <div class="mb-3 position-relative" id="">
+                                                                <br>
                                                                 <label for="denominacion_funcional"
                                                                     class="form-label campoObligatorio">FUNCION</label>
                                                                 <input type="text" autocomplete="off"
@@ -188,6 +192,7 @@
                                                         </div>
                                                         <div class="col-md-3">
                                                             <div class="mb-3 position-relative" id="">
+                                                                <br>
                                                                 <label for="area"
                                                                     class="form-label campoObligatorio">AREA
                                                                     PERSONAL</label>
@@ -199,6 +204,7 @@
                                                         </div>
                                                         <div class="col-md-6">
                                                             <div class="mb-6 position-relative" id="">
+                                                                <br>
                                                                 <label for="jefe_inmediato"
                                                                     class="form-label campoObligatorio">FEJE/A
                                                                     INMEDIATO</label>
@@ -216,7 +222,8 @@
                                                                 <select class="form-control select2"
                                                                     data-toggle="select2" id="id_perfil"
                                                                     name="id_perfil" data-placeholder="Seleccione"
-                                                                    style="z-index:100;">
+                                                                    style="z-index:100;"
+                                                                    <?= ($session->id_perfil != 1) ? 'disabled' : '' ?>>
                                                                     <option value="0">Seleccione</option>
                                                                     <?php if ($session->id_perfil == 1): ?>
                                                                     <?php foreach ($cat_perfil as $p): ?>
@@ -228,7 +235,7 @@
                                                                     <?php elseif ($session->id_perfil == 4): ?>
                                                                     <option value="6" selected>ENLACE RH NO SAP</option>
                                                                     <?php elseif ($session->id_perfil == 6): ?>
-                                                                    <option value="8" selected >ESTUDIANTE</option>
+                                                                    <option value="8" selected>ESTUDIANTE</option>
                                                                     <?php endif; ?>
 
 
@@ -353,11 +360,26 @@
     <script src="<?php echo base_url(); ?>plugins/datatables/dataTables.bootstrap4.min.js"></script>
 
     <script src="<?php echo base_url(); ?>assets/pages/jquery.analytics_customers.init.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
     <script>
-        $(document).ready(function() {
-    st.agregar.agregarUsuario();
+    $(document).ready(function() {
+        st.agregar.agregarUsuario();
+        $('#id_dependencia').select2({
+            placeholder: "Seleccione",
+            allowClear: true,
+            width: '100%',
+            dropdownAutoWidth: true,
+            minimumResultsForSearch: 10 // Muestra la barra de búsqueda si hay más de 10 opciones
+        });
+        $('#id_nivel').select2({
+            placeholder: "Seleccione",
+            allowClear: true,
+            width: '100%',
+            dropdownAutoWidth: true,
+            minimumResultsForSearch: 10 // Muestra la barra de búsqueda si hay más de 10 opciones
+        });
 
-
-});
+    });
     </script>
