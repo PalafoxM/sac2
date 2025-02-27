@@ -112,8 +112,10 @@ class Usuario extends BaseController
         ];
         $response = $this->globals->saveTabla(['visible'=>0],$dataConfig,$dataBitacora);
         $contrasenia = md5($usuario->curp);
-    
-        try {
+        $response->error = false;
+        $response->respuesta = "Correo enviado correctamente.";
+        return $this->respond($response);
+/*         try {
             $mail->isSMTP(); // Usar SMTP para el envío
             $mail->SMTPDebug = 2; // Habilitar depuración (2 para mensajes de cliente y servidor)
             $mail->Host = 'smtp.gmail.com'; // Servidor SMTP de Gmail
@@ -156,7 +158,7 @@ class Usuario extends BaseController
             $response->error = true;
             $response->respuesta = "Error inesperado al enviar el correo: " . $e->getMessage();
             return $this->respond($response);
-        }
+        } */
 
     }
  
@@ -999,6 +1001,28 @@ class Usuario extends BaseController
             $response->error      =  false;
             $response->respuesta  =  $result->respuesta;
             $response->data       =  $result->data;
+
+        }
+        return $this->respond($response->data);
+    }
+    public function getSelectPeriodos()
+    {
+        $session = \Config\Services::session();
+        $response = new \stdClass();
+        $response->error = true;
+        $data = $this->request->getPost();  
+        $result = $this->globals->getTabla(["tabla"=>"periodo_sac", 'where' => ['visible' => 1]]);
+        if(!$result->error){
+            $response->error           =  false;
+            $response->respuesta       =  $result->respuesta;
+            $response->data['periodo'] =  $result->data;
+
+        }
+        $result = $this->globals->getTabla(["tabla"=>"categoria_sac", 'where' => ['visible' => 1]]);
+        if(!$result->error){
+            $response->error             =  false;
+            $response->respuesta         =  $result->respuesta;
+            $response->data['categoria'] =  $result->data;
 
         }
         return $this->respond($response->data);

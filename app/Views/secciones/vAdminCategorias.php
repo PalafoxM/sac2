@@ -55,7 +55,7 @@ $meses = [
                                         href="#activity_detail">Periodo</a>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link" id="portfolio_detail_tab" data-toggle="pill"
+                                    <a onclick="ini.inicio.getSelectPeriodos()" class="nav-link" id="portfolio_detail_tab" data-toggle="pill"
                                         href="#portfolio_detail">Cursos</a>
                                 </li>
                                 <!--  <li class="nav-item">
