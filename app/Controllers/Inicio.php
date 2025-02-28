@@ -49,7 +49,8 @@ class Inicio extends BaseController {
                     $data["dscCursos"][] = [
                         'dsc_curso' => $miCurso->data[0]->dsc_curso,
                         'img' => $miCurso->data[0]->img_ruta,
-                        'id' => $miCurso->data[0]->id_cursos_sac
+                        'id' => $miCurso->data[0]->id_cursos_sac,
+                        'periodo'   => $c->id_periodo
                     ];
                 }
             }
