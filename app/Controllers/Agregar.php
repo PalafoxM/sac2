@@ -513,7 +513,8 @@ class Agregar extends BaseController {
         $periodo   = $Mglobal->getTabla(['tabla' => 'vw_periodo', 'where' => ['visible' => 1, 'id_curso' => $id_cursos_sac]]);
         $categoria = $Mglobal->getTabla(['tabla' => 'vw_categoria', 'where' => ['visible' => 1, 'id_curso' => $id_cursos_sac]]);
         if(isset($result->data) && empty($result->data)){
-            $data['contentView'] = 'secciones/vError500';                
+            $data['contentView'] = 'secciones/vError500';
+            $data['layout'] = 'plantilla/lytLogin';
             $this->_renderView($data);
             die();
           
