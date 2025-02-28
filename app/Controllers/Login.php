@@ -71,6 +71,7 @@ class Login extends BaseController {
                 $session->set('id_padre',$result->data[0]->id_padre);
                 $session->set('id_dependencia',$result->data[0]->id_dependencia);
                 $session->set('cambio_pass',$result->data[0]->cambio_pass);
+                $session->set('fec_nac',$result->data[0]->fec_nac);
                 $response->error     = $result->error;
                 $response->respuesta = $result->respuesta;
             }     
