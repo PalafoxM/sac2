@@ -54,6 +54,7 @@ class Inicio extends BaseController {
                 }
             }
         }  
+        die(var_dump($data["dscCursos"]));
         $data = array_merge($this->defaultData, $data);
         echo view($data['layout'], $data); 
                       
