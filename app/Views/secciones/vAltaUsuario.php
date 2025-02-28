@@ -51,7 +51,7 @@
                                                                         id="icono" class="dripicons-search"></i>
                                                                     <div style="display:none;" id="spinner"
                                                                         class="spinner-border" role="status">
-                                                                        <span class="visually-hidden">Loading...</span>
+                                                                        <span class="visually-hidden"></span>
                                                                     </div>
                                                                 </span>
                                                                 <input type="text" class="form-control"
