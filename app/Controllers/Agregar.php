@@ -512,9 +512,12 @@ class Agregar extends BaseController {
         $result    = $Mglobal->getTabla(['tabla' => 'cursos_sac', 'where' => ['visible' => 1, 'activo' => 1, 'id_cursos_sac' => $id_cursos_sac]]);
         $periodo   = $Mglobal->getTabla(['tabla' => 'vw_periodo', 'where' => ['visible' => 1, 'id_curso' => $id_cursos_sac]]);
         $categoria = $Mglobal->getTabla(['tabla' => 'vw_categoria', 'where' => ['visible' => 1, 'id_curso' => $id_cursos_sac]]);
-        if(!$result->error){
-           $data['curso']= $result->data[0];
+        if(isset($result->data) && empty($result->data)){
+            $data['contentView'] = 'secciones/vError500';                
+            $this->_renderView($data);
+          
         }
+        $data['curso']= $result->data[0];
         if(!$periodo->error){
            $data['periodo']= (isset($periodo->data) && !empty($periodo->data))?$periodo->data:[];
         }
