@@ -276,7 +276,23 @@
                         <a class="nav-link dropdown-toggle waves-effect waves-light nav-user" data-toggle="dropdown" href="#" role="button"
                             aria-haspopup="false" aria-expanded="false">
                             <img src="<?php echo base_url(); ?>assets/images/users/user-4.jpg" alt="profile-user" class="rounded-circle" /> 
-                            <span class="ml-1 nav-user-name hidden-sm"><?= $session->nombre_completo?> <i class="mdi mdi-chevron-down"></i> </span>
+                            <span class="ml-1 nav-user-name hidden-sm"><?= $session->nombre_completo?> <i class="mdi mdi-chevron-down"></i> </span><
+                            <h6><?php 
+                            switch($session->id_perfil){
+                             case 1:
+                                echo 'Administrador';
+                                break;
+                             case 4:
+                                echo 'Gestor';
+                                break;
+                             case 6:
+                                echo 'Enlace';
+                                break;
+                             case 8:
+                                echo 'Estudiante';
+                                break;
+                            }
+                            ?></h6>
                         </a>
                         <div class="dropdown-menu dropdown-menu-right">
                             <a class="dropdown-item" href="#"><i class="dripicons-user text-muted mr-2"></i> Profile</a>
