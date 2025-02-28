@@ -515,6 +515,7 @@ class Agregar extends BaseController {
         if(isset($result->data) && empty($result->data)){
             $data['contentView'] = 'secciones/vError500';                
             $this->_renderView($data);
+            die();
           
         }
         $data['curso']= $result->data[0];
